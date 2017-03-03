@@ -1,244 +1,80 @@
 <html>
-<head>
-<meta charset="UTF-8">
-<title>data</title>
-<link href="https://npmcdn.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
-<style>
-/*html,head,body { padding:0; margin:0; }
-body { font-family: calibri, helvetica, arial, sans-serif; }
-*/
-</style>
-</head>
+<head></head>
 <body>
-<div style="display:flex">
-    <div id="a1"></div>    <div id="a2"></div>    <div id="a3"></div>
-</div>
-<div style="display:flex">
-    <div id="b1"></div>    <div id="b2"></div>    <div id="b3"></div>
-</div>
-<div style="display:flex">
-    <div id="c1"></div>    <div id="c2"></div>    <div id="c3"></div>
-</div>
-<div style="display:flex">
-    <div id="d1"></div>    <div id="d2"></div>    <div id="d3"></div>
-</div>
-
-<hr>
-<button id="reset">Reset</button>
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!--Plot-->
-<script src="https://cdn.jsdelivr.net/umbrella/2.6.6/umbrella.min.js"></script> <!--DOM-->
-<script src="https://cdn.rawgit.com/abdmob/x2js/master/xml2json.min.js"></script>  <!--XML->JSON-->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>  <!--Utility-->
-<script type="text/javascript">
-var xml_url = "http://cors.io/?u=https://spellstone.synapse-games.com/assets/cards.xml"
-var json = window.localStorage.getItem('cards.json')
-//-----------------------------------------------
-var z = 10000
-
-var commander = unit => +unit.id%z >= 1 && +unit.id%z < 900
-
-var miscellaneous = unit => +unit.id%z >= 900 && +unit.id%z < 1000
-
-var standard = unit => +unit.id%z >= 1000 && +unit.id%z <2000
-
-var reward = unit => +unit.id%z >= 2000 && +unit.id%z < 5000
-
-var premium = unit => +unit.id%z >= 5000 && +unit.id%z < 8000
-
-var enemy = unit => +unit.id%z >= 8000 && +unit.id%z < 9000
-
-var faction = faction => unit => unit.type == faction // broken
-// calc in processJSON
-
-var Common = 1
-var Rare = 2
-var Epic = 3
-var Legendary = 4
-var Mythic = 5
-var rarity = rarity => unit => +unit.rarity == rarity
-var rarityAtLeast = rarity => unit => +unit.rarity >= rarity
-
-
-var single = unit => +unit.id < 10000
-var double = unit => +unit.id >= 10000 + unit.id < 20000
-var quad = unit => +unit.id >= 20000
-
-var not = fn => unit => !fn(unit)
-
-var nominal = u => premium(u) || reward(u) || standard(u)
-var important = u => nominal(u) && rarityAtLeast(Epic)(u)
-
-
-//-----------------------------------------------
-
-u("button#reset").on('click', function(){
-    console.log('cleared')
-    json = ""
-    window.localStorage.clear()
-    getXML()
-})
-
-if (json) makeJSON()
-else getXML()
-//---------------------------------------------
-function getXML() {
-    var oReq = new XMLHttpRequest()
-    oReq.addEventListener("load", makeJSON)
-    // oReq.addEventListener("progress", updateProgress);
-    // oReq.addEventListener("error", transferFailed);
-    // oReq.addEventListener("abort", transferCanceled);
-
-    oReq.open("GET", xml_url)
-    oReq.send()
-    console.log('getting xml file')
+<script src="workers.js"></script>
+<!-- <script name="Array.shuffle">
+function shuffle(arr) {
+  return arr.reduce(function(arr, elt) {
+    arr.splice(~~(Math.random() * (arr.length + 1)), 0, elt)
+    return arr
+  }, [])
 }
-//-----------------------------------------------
-function makeJSON() {
-    var jsonObj
-    if (json) {
-        jsonObj = JSON.parse(json)
+</script> -->
+<script name="Match Setup">
+commander1 = {health:5}
+commander2 = {health:7}
 
-    } else {
-        var xml_string = this.responseText
-        var x2js = new X2JS({
-            arrayAccessFormPaths :
-                [ "root.unit.skill",
-                ],
-        })
-        json = xml_string
-        jsonObj = x2js.xml_str2json( xml_string )
+unit0 = {attack:1,health:1,delay:0}
+unit1 = {attack:1,health:3,delay:1}
+unit2 = {attack:2,health:3,delay:2}
 
-        window.localStorage.setItem('cards.json', JSON.stringify(jsonObj))
-    }
-    console.log("data ready")
-    processJSON(jsonObj)
+deck_fast = [unit2,unit1,unit0]
+deck_slow = [unit2,unit1,unit0,unit0]
+
+basic = match(commander1, deck_fast, commander2, deck_slow)
+
+// matchup = match(commander1, deck_fast, commander2, deck_slow)
+function match(commanderO, deckO, commanderD, deckD) {
+  return {
+    attacker: { player: { commander: commanderO, deck: deckO }, strategy: 0, dealer: 0 },
+    defender: { player: { commander: commanderD, deck: deckD }, strategy: 0, dealer: 0 }
+  }
 }
-//-----------------------------------------------
-// function obj_key_counting(units) {
-//     // _.map(obj.root.unit)
-//     var counter = {}
-//     R.each(units, function (unit) {
-//         var keys = _.keys(unit)
-//         _.each(keys, function (key) {
-//             counter[key] = ('key' in counter) ? counter[key] + 1 : 1
-//         })
-//     })
-//     return counter
-// }
-//-----------------------------------------------
+</script>
+<!-- ======================================================================= -->
+<script name="Wiring">
+stats = {}
 
-function histData(units, key) {
-    var counter = {};
-    for (var i = 0; i < units.length; i ++) {
-        var unit = units[i]
-        var val = unit[key]
-        counter[val] = (val in counter) ? R.append(unit.name, counter[val]) : [unit.name]
-    }
-    var kk = R.transpose(R.toPairs(counter))
-    // console.log(kk)
-    return kk
+function request(a,b,roundtrip) {
+  var in_from = roundtrip[0]
+  var in_to = roundtrip[1]
+  var out_from = roundtrip[2]
+  var out_to = roundtrip[3]
+  var begin = Date.now()
+  var key = in_to+"_"+out_from
+  stats[key] = 0
+  a.ports[in_from].subscribe(function(data) {
+    begin = Date.now() // note when request began
+    b.ports[in_to].send(data)
+  })
+  b.ports[out_from].subscribe(function(data) {
+    stats[key] += Date.now() - begin // log time for this request
+    a.ports[out_to].send(data)
+  })
 }
+</script>
+<!-- ======================================================================= -->
+<!-- ======================================================================= -->
+<script name="Main">
 
-// var unitTypes = obj.root.unitType
-// var memo = _.reduce(unitTypes, function(memo, t) {
-//  var name = t.name || "-"
+very_start = Date.now()
 
-//  memo[name] = t.id
-//  return memo
-// },{})
-// // console.log(memo)
+sim = Elm.Simulator.worker(); // FIXME, sims should be a pool
+player = Elm.Player.worker();
+brain = Elm.Brain.worker();
 
-function upgraded(units) {
-    return R.map(function (unit) {
-        return R.reduce(
-            function (memo, upg) {
-                return R.reduce(
-                    function (memo_, key) {
-                        memo_[key] = upg[key]
-                        return memo_
-                    },
-                    R.clone(memo),
-                    R.keys(upg)
-                )
-            },
-            R.clone(unit), // THIS WAS A HUGE FIXME
-            unit.upgrade
-        )
-    },
-    units)
-}
 
-function processJSON(obj) {
-    // var counter = accounting(units) // unit understanding via obj keys
-    var units = R.filter(important, obj.root.unit)
+request(brain,sim,["resolve","requisition","report","results"])
+  //brain.resolve -requisition-> requisition => sim.report -report-> brain.results
 
-    var U = R.filter(single, units)
+request(sim,player,["awaitChoice","choose","chosen","play"])
+  //sim.awaitChoice -fight-> player.choose => player.chosen -hand_idx-> sim.play
 
-    var U_ = upgraded(R.filter(quad, units))
-
-    var g1 = 
-        { "standard base" : R.filter(standard, U)
-        , "premium base" : R.filter(premium, U)
-        , "standard quad" : R.filter(standard, U_)
-        , "premium quad" : R.filter(premium, U_)
-        }
-    compare(g1, 'attack', 'a1', 'norm')
-    compare(g1, 'health', 'b1', 'norm')
-
-    var g1 = 
-        { "cost 0" : R.filter(u => +u.cost==0, U_)
-        , "cost 1" : R.filter(u => +u.cost==1, U_)
-        , "cost 2" : R.filter(u => +u.cost==2, U_)
-        , "cost 3" : R.filter(u => +u.cost==3, U_)
-        , "cost 4" : R.filter(u => +u.cost==4, U_)
-        }
-    compare(g1, 'health', 'c1')
-    compare(g1, 'attack', 'd1')
-
-}
-
-function compare(datas,key,div,postproc) {
-    var layout = {
-      autosize: true,
-      width: 1000,
-      height: 300,
-      margin: { t: -10 },
-      title: key,
-    }
-
-    var pairs = R.toPairs(datas)
-    var namehistdatas = R.map(x => [x[0],histData(x[1],key)], pairs)
-
-    var graphs = R.map(
-        function (data) {
-            var name = data[0]
-            var xs = data[1][0]
-            var nys = data[1][1]
-            var ys = R.map(R.length, nys)
-
-            switch (postproc) {
-                case 'norm':
-                    var mx = R.reduce(R.add, 0, ys)
-                    var normed_ys = R.map(y => y / mx, ys)
-                    ys = normed_ys
-            }
-            return {
-                x: xs,
-                y: ys,
-                //text: R.map(R.join(","),data[1]),
-                type: 'bar',
-                name: name
-            }
-        },
-        namehistdatas)
-
-    layout.barmode = 'group'
-
-    Plotly.newPlot(div, graphs, layout);
-}
+brain.ports.analyze.send(basic)
+setTimeout(function () {stats["total"] = Date.now()-very_start; console.log(stats)},  100)
+setTimeout(function () {stats["total"] = Date.now()-very_start; console.log(stats)}, 1000)
+setTimeout(function () {stats["total"] = Date.now()-very_start; console.log(stats)},10000)
 
 </script>
-
 </body>
 </html>
