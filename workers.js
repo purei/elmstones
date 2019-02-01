@@ -8461,6 +8461,269 @@ var _mgold$elm_random_pcg$Random_Pcg$fromJson = _elm_lang$core$Json_Decode$oneOf
 		}
 	});
 
+var _user$project$Multiset$diff = F2(
+	function (full, semi) {
+		var right = F3(
+			function (key, val, dict) {
+				return dict;
+			});
+		var both = F4(
+			function (key, val1, val2, dict) {
+				return A3(_elm_lang$core$Dict$insert, key, val1 - val2, dict);
+			});
+		var left = F3(
+			function (key, val, dict) {
+				return A3(_elm_lang$core$Dict$insert, key, val, dict);
+			});
+		return A6(_elm_lang$core$Dict$merge, left, both, right, full, semi, _elm_lang$core$Dict$empty);
+	});
+var _user$project$Multiset$foldl = _elm_lang$core$Dict$foldl;
+var _user$project$Multiset$counts = _elm_lang$core$Dict$values;
+var _user$project$Multiset$elements = _elm_lang$core$Dict$keys;
+var _user$project$Multiset$flatten = A2(
+	_elm_lang$core$Dict$foldl,
+	F3(
+		function (key, val, list) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				list,
+				A2(_elm_lang$core$List$repeat, val, key));
+		}),
+	{ctor: '[]'});
+var _user$project$Multiset$equal = F2(
+	function (a, b) {
+		return _elm_lang$core$Native_Utils.eq(
+			_user$project$Multiset$flatten(a),
+			_user$project$Multiset$flatten(b));
+	});
+var _user$project$Multiset$remove = F2(
+	function (key, multiset) {
+		return A2(_elm_lang$core$Dict$remove, key, multiset);
+	});
+var _user$project$Multiset$decrement = function (x) {
+	var _p0 = x;
+	if (_p0.ctor === 'Nothing') {
+		return _elm_lang$core$Native_Utils.crashCase(
+			'Multiset',
+			{
+				start: {line: 11, column: 15},
+				end: {line: 15, column: 42}
+			},
+			_p0)('no?');
+	} else {
+		var j = _p0._0 - 1;
+		return (_elm_lang$core$Native_Utils.cmp(j, 0) < 1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(j);
+	}
+};
+var _user$project$Multiset$takeOne = F2(
+	function (key, multiset) {
+		return A3(_elm_lang$core$Dict$update, key, _user$project$Multiset$decrement, multiset);
+	});
+var _user$project$Multiset$increment = function (x) {
+	var _p2 = x;
+	if (_p2.ctor === 'Nothing') {
+		return _elm_lang$core$Maybe$Just(1);
+	} else {
+		return _elm_lang$core$Maybe$Just(_p2._0 + 1);
+	}
+};
+var _user$project$Multiset$fromList = function (list) {
+	return A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (key, dict) {
+				return A3(_elm_lang$core$Dict$update, key, _user$project$Multiset$increment, dict);
+			}),
+		_elm_lang$core$Dict$empty,
+		list);
+};
+
+var _user$project$Combination$add = F3(
+	function (shift, l1, l2) {
+		var end2 = A2(
+			_elm_lang$core$List$drop,
+			_elm_lang$core$List$length(l1) + shift,
+			l2);
+		var active = A2(_elm_lang$core$List$drop, shift, l2);
+		var head2 = A2(_elm_lang$core$List$take, shift, l2);
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			head2,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				A3(
+					_elm_lang$core$List$map2,
+					F2(
+						function (x, y) {
+							return x + y;
+						}),
+					l1,
+					active),
+				end2));
+	});
+var _user$project$Combination$multiplyOneVector = F2(
+	function (size, acc) {
+		var $new = A2(
+			_elm_lang$core$List$repeat,
+			size + _elm_lang$core$List$length(acc),
+			0);
+		var n = size + 1;
+		var one_vector = A2(_elm_lang$core$List$repeat, n, 1);
+		return _elm_lang$core$Tuple$second(
+			A3(
+				_elm_lang$core$List$foldl,
+				F2(
+					function (entry, _p0) {
+						var _p1 = _p0;
+						var _p2 = _p1._0;
+						return {
+							ctor: '_Tuple2',
+							_0: _p2 + 1,
+							_1: A3(_user$project$Combination$add, _p2, acc, _p1._1)
+						};
+					}),
+				{ctor: '_Tuple2', _0: 0, _1: $new},
+				one_vector));
+	});
+var _user$project$Combination$count = F2(
+	function (k, list) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			_user$project$Combination$multiplyOneVector,
+			{
+				ctor: '::',
+				_0: 1,
+				_1: {ctor: '[]'}
+			},
+			list);
+	});
+var _user$project$Combination$generate = F2(
+	function (depth, mset) {
+		var attach = F2(
+			function (key, list) {
+				return _elm_lang$core$List$isEmpty(list) ? {
+					ctor: '::',
+					_0: {
+						ctor: '::',
+						_0: key,
+						_1: {ctor: '[]'}
+					},
+					_1: {ctor: '[]'}
+				} : A2(
+					_elm_lang$core$List$map,
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						})(key),
+					list);
+			});
+		var total = _elm_lang$core$List$sum(
+			_user$project$Multiset$counts(mset));
+		var keys = _user$project$Multiset$elements(mset);
+		var len = _elm_lang$core$List$length(keys);
+		if (_elm_lang$core$Native_Utils.cmp(total - depth, 0) < 0) {
+			return {ctor: '[]'};
+		} else {
+			if (_elm_lang$core$Native_Utils.cmp(depth, 0) < 1) {
+				return {
+					ctor: '::',
+					_0: {ctor: '[]'},
+					_1: {ctor: '[]'}
+				};
+			} else {
+				var them = _elm_lang$core$List$reverse(
+					A2(
+						_elm_lang$core$List$drop,
+						1,
+						A3(
+							_elm_lang$core$List$foldl,
+							F2(
+								function (key, list) {
+									var _p3 = list;
+									if (_p3.ctor === '[]') {
+										return {ctor: '[]'};
+									} else {
+										var _p4 = _p3._0;
+										var prevkey = _p4._0;
+										var mset = _p4._1;
+										return (_elm_lang$core$Native_Utils.cmp(
+											_elm_lang$core$List$sum(
+												_user$project$Multiset$counts(mset)) - depth,
+											0) > -1) ? {
+											ctor: '::',
+											_0: {
+												ctor: '_Tuple2',
+												_0: -1,
+												_1: A2(_user$project$Multiset$remove, key, mset)
+											},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: key, _1: mset},
+												_1: _p3._1
+											}
+										} : list;
+									}
+								}),
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: -1, _1: mset},
+								_1: {ctor: '[]'}
+							},
+							keys)));
+				var dec = F2(
+					function (key, mset) {
+						return A2(_user$project$Multiset$takeOne, key, mset);
+					});
+				var attach_ = function (_p5) {
+					var _p6 = _p5;
+					var _p7 = _p6._0;
+					return A2(
+						attach,
+						_p7,
+						A2(
+							_user$project$Combination$generate,
+							depth - 1,
+							A2(dec, _p7, _p6._1)));
+				};
+				return A2(_elm_lang$core$List$concatMap, attach_, them);
+			}
+		}
+	});
+var _user$project$Combination$combinations = F2(
+	function (k, list) {
+		var mset = _user$project$Multiset$fromList(list);
+		var ok = A2(_user$project$Combination$generate, k, mset);
+		return ok;
+	});
+var _user$project$Combination$getAt = F2(
+	function (i, list) {
+		if (_elm_lang$core$Native_Utils.cmp(i, 1) < 0) {
+			return 1;
+		} else {
+			var _p8 = _elm_lang$core$List$head(
+				A2(_elm_lang$core$List$drop, i - 1, list));
+			if (_p8.ctor === 'Nothing') {
+				return 0;
+			} else {
+				return _p8._0;
+			}
+		}
+	});
+var _user$project$Combination$count_combos = F2(
+	function (k, list) {
+		var list_ = _user$project$Multiset$counts(
+			_user$project$Multiset$fromList(list));
+		var ans = A2(_user$project$Combination$count, k, list_);
+		return A2(_user$project$Combination$getAt, k + 1, ans);
+	});
+
+var _user$project$Commander$reduceHealth = F2(
+	function (amt, commander) {
+		return _elm_lang$core$Native_Utils.update(
+			commander,
+			{damage_taken: commander.damage_taken + amt});
+	});
+
 var _user$project$Types$goto = function (x) {
 	return A2(
 		_elm_lang$core$Task$perform,
@@ -8493,7 +8756,7 @@ var _user$project$Types$emptyPlayer = A2(
 	_user$project$Types$Player,
 	_user$project$Types$CommanderData(0),
 	{ctor: '[]'});
-var _user$project$Types$emptyCompetitor = A3(_user$project$Types$Competitor, _user$project$Types$emptyPlayer, 0, 1);
+var _user$project$Types$emptyCompetitor = A3(_user$project$Types$Competitor, _user$project$Types$emptyPlayer, 0, 0);
 var _user$project$Types$emptyMatchup = A2(_user$project$Types$Matchup, _user$project$Types$emptyCompetitor, _user$project$Types$emptyCompetitor);
 var _user$project$Types$UnitData = F3(
 	function (a, b, c) {
@@ -8509,7 +8772,7 @@ var _user$project$Types$Battle = F3(
 	});
 var _user$project$Types$Army = F4(
 	function (a, b, c, d) {
-		return {commander: a, deck: b, hand: c, line: d};
+		return {commander: a, deck: b, hand: c, combatants: d};
 	});
 var _user$project$Types$Commander = F2(
 	function (a, b) {
@@ -8560,8 +8823,8 @@ var _user$project$Types$side = function (battle) {
 		return _elm_lang$core$Native_Utils.crash(
 			'Types',
 			{
-				start: {line: 96, column: 8},
-				end: {line: 96, column: 19}
+				start: {line: 109, column: 8},
+				end: {line: 109, column: 19}
 			})('never should happen');
 	} else {
 		var _p4 = A2(_elm_lang$core$Basics_ops['%'], battle.turn, 2);
@@ -8574,66 +8837,59 @@ var _user$project$Types$side = function (battle) {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'Types',
 					{
-						start: {line: 97, column: 8},
-						end: {line: 100, column: 36}
+						start: {line: 110, column: 8},
+						end: {line: 113, column: 36}
 					},
 					_p4)('math says no');
 		}
 	}
 };
 
-var _user$project$Multiset$foldl = _elm_lang$core$Dict$foldl;
-var _user$project$Multiset$elements = _elm_lang$core$Dict$keys;
-var _user$project$Multiset$flatten = function (count) {
-	return A3(
-		_elm_lang$core$Dict$foldl,
-		F3(
-			function (key, val, list) {
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					list,
-					A2(_elm_lang$core$List$repeat, val, key));
-			}),
-		{ctor: '[]'},
-		count);
-};
-var _user$project$Multiset$decrement = function (x) {
-	var _p0 = x;
-	if (_p0.ctor === 'Nothing') {
-		return _elm_lang$core$Native_Utils.crashCase(
-			'Multiset',
-			{
-				start: {line: 11, column: 15},
-				end: {line: 15, column: 42}
-			},
-			_p0)('no?');
-	} else {
-		var j = _p0._0 - 1;
-		return (_elm_lang$core$Native_Utils.cmp(j, 0) < 1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(j);
-	}
-};
-var _user$project$Multiset$take = F2(
-	function (key, multiset) {
-		return A3(_elm_lang$core$Dict$update, key, _user$project$Multiset$decrement, multiset);
-	});
-var _user$project$Multiset$increment = function (x) {
-	var _p2 = x;
-	if (_p2.ctor === 'Nothing') {
-		return _elm_lang$core$Maybe$Just(1);
-	} else {
-		return _elm_lang$core$Maybe$Just(_p2._0 + 1);
-	}
-};
-var _user$project$Multiset$fromList = function (list) {
+var _user$project$Realizations$get = _elm_lang$core$Dict$get;
+var _user$project$Realizations_ops = _user$project$Realizations_ops || {};
+_user$project$Realizations_ops['<<|'] = _elm_lang$core$Basics$flip(_elm_lang$core$List$map);
+var _user$project$Realizations$values = _elm_lang$core$Dict$values;
+var _user$project$Realizations$mult = function (_p0) {
 	return A3(
 		_elm_lang$core$List$foldl,
 		F2(
-			function (key, dict) {
-				return A3(_elm_lang$core$Dict$update, key, _user$project$Multiset$increment, dict);
+			function (x, y) {
+				return x * y;
 			}),
-		_elm_lang$core$Dict$empty,
-		list);
+		1,
+		A2(
+			_elm_lang$core$List$map,
+			function (_) {
+				return _.multiplier;
+			},
+			_user$project$Realizations$values(_p0)));
 };
+var _user$project$Realizations$keys = _elm_lang$core$Dict$keys;
+var _user$project$Realizations$toList = _elm_lang$core$Dict$toList;
+var _user$project$Realizations$update = _elm_lang$core$Dict$update;
+var _user$project$Realizations$empty = _elm_lang$core$Dict$empty;
+var _user$project$Realizations$Stat = F3(
+	function (a, b, c) {
+		return {wins: a, attempts: b, multiplier: c};
+	});
+var _user$project$Realizations$addData = F3(
+	function (_p1, mult, key) {
+		var _p2 = _p1;
+		var _p6 = _p2._0;
+		var _p5 = _p2._1;
+		var fn = function (entry) {
+			var _p3 = entry;
+			if (_p3.ctor === 'Nothing') {
+				return _elm_lang$core$Maybe$Just(
+					A3(_user$project$Realizations$Stat, _p6, _p5, mult));
+			} else {
+				var _p4 = _p3._0;
+				return _elm_lang$core$Maybe$Just(
+					A3(_user$project$Realizations$Stat, _p6 + _p4.wins, _p5 + _p4.attempts, mult));
+			}
+		};
+		return A2(_elm_lang$core$Dict$update, key, fn);
+	});
 
 var _user$project$PartialPermute$numEntries = F2(
 	function (n, d) {
@@ -8653,8 +8909,8 @@ var _user$project$PartialPermute$numEntries = F2(
 			}
 		}
 	});
-var _user$project$PartialPermute$recurse = F2(
-	function (depth, mset) {
+var _user$project$PartialPermute$recurse = F3(
+	function (kind, depth, mset) {
 		var trick = F2(
 			function (key, list) {
 				return _elm_lang$core$List$isEmpty(list) ? {
@@ -8680,14 +8936,18 @@ var _user$project$PartialPermute$recurse = F2(
 			return {ctor: '[]'};
 		} else {
 			if (_elm_lang$core$Native_Utils.eq(depth, 0)) {
-				return {
+				return _elm_lang$core$Native_Utils.eq(kind, 0) ? {
+					ctor: '::',
+					_0: {ctor: '[]'},
+					_1: {ctor: '[]'}
+				} : {
 					ctor: '::',
 					_0: _user$project$Multiset$flatten(mset),
 					_1: {ctor: '[]'}
 				};
 			} else {
 				var dec = function (key) {
-					return A2(_user$project$Multiset$take, key, mset);
+					return A2(_user$project$Multiset$takeOne, key, mset);
 				};
 				return A2(
 					_elm_lang$core$List$concatMap,
@@ -8695,8 +8955,9 @@ var _user$project$PartialPermute$recurse = F2(
 						return A2(
 							trick,
 							key,
-							A2(
+							A3(
 								_user$project$PartialPermute$recurse,
+								kind,
 								depth - 1,
 								dec(key)));
 					},
@@ -8714,58 +8975,55 @@ var _user$project$PartialPermute$listToDepth = F2(
 		return (_elm_lang$core$Native_Utils.cmp(entries, 10000) > 0) ? _elm_lang$core$Native_Utils.crash(
 			'PartialPermute',
 			{
-				start: {line: 37, column: 10},
-				end: {line: 37, column: 21}
-			})('maybe too many entries attempted') : A2(_user$project$PartialPermute$recurse, depth, dedup);
+				start: {line: 40, column: 10},
+				end: {line: 40, column: 21}
+			})('maybe too many entries attempted') : A3(_user$project$PartialPermute$recurse, 1, depth, dedup);
+	});
+var _user$project$PartialPermute$chunkToDepth = F2(
+	function (depth, list) {
+		var entries = A2(
+			_user$project$PartialPermute$numEntries,
+			_elm_lang$core$List$length(list),
+			depth);
+		var dedup = _user$project$Multiset$fromList(list);
+		return (_elm_lang$core$Native_Utils.cmp(entries, 10000) > 0) ? _elm_lang$core$Native_Utils.crash(
+			'PartialPermute',
+			{
+				start: {line: 48, column: 10},
+				end: {line: 48, column: 21}
+			})('maybe too many entries attempted') : A3(_user$project$PartialPermute$recurse, 0, depth, dedup);
 	});
 
-var _user$project$Brain$final = function (model) {
-	var attacker = model.fixed_matchup.attacker;
-	var matchup = model.fixed_matchup;
-	var matchup_ = _elm_lang$core$Native_Utils.update(
-		matchup,
-		{
-			attacker: _elm_lang$core$Native_Utils.update(
-				attacker,
-				{strategy: 0, dealer: 0})
-		});
-	var _p0 = A2(
-		_elm_lang$core$Debug$log,
-		'end',
-		A3(
-			_elm_lang$core$List$foldl,
-			F2(
-				function (_p2, _p1) {
-					var _p3 = _p2;
-					var _p4 = _p1;
-					return {ctor: '_Tuple2', _0: _p4._0 + _p3.wins, _1: _p4._1 + _p3.attempts};
-				}),
-			{ctor: '_Tuple2', _0: 0, _1: 0},
-			_elm_lang$core$Dict$values(model.data)));
-	return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+var _user$project$Focus$factorial = function (n) {
+	var _p0 = n;
+	if (_p0 === 0) {
+		return 1;
+	} else {
+		return n * _user$project$Focus$factorial(n - 1);
+	}
 };
-var _user$project$Brain$ln = _elm_lang$core$Basics$logBase(_elm_lang$core$Basics$e);
-var _user$project$Brain$factor = _elm_lang$core$Basics$sqrt(2);
-var _user$project$Brain$calc = F2(
-	function (total, _p5) {
-		var _p6 = _p5;
-		var _p7 = _p6._1.attempts;
+var _user$project$Focus$ln = _elm_lang$core$Basics$logBase(_elm_lang$core$Basics$e);
+var _user$project$Focus$factor = _elm_lang$core$Basics$sqrt(2);
+var _user$project$Focus$calc = F2(
+	function (total, _p1) {
+		var _p2 = _p1;
+		var _p3 = _p2._1.attempts;
 		return A2(
 			F2(
 				function (v0, v1) {
 					return {ctor: '_Tuple2', _0: v0, _1: v1};
 				}),
-			_p6._0,
-			_elm_lang$core$Native_Utils.eq(_p7, 0) ? 0 : ((_p6._1.wins / _p7) + (_user$project$Brain$factor * _elm_lang$core$Basics$sqrt(
-				_user$project$Brain$ln(total) / _p7))));
+			_p2._0,
+			_elm_lang$core$Native_Utils.eq(_p3, 0) ? 0 : ((_p2._1.wins / _p3) + (_user$project$Focus$factor * _elm_lang$core$Basics$sqrt(
+				_user$project$Focus$ln(total) / _p3))));
 	});
-var _user$project$Brain$getList = function (model) {
+var _user$project$Focus$getList = function (model) {
 	return A2(
 		_elm_lang$core$List$map,
-		_user$project$Brain$calc(model.total),
-		_elm_lang$core$Dict$toList(model.data));
+		_user$project$Focus$calc(model.total),
+		_user$project$Realizations$toList(model.data));
 };
-var _user$project$Brain$getKeyFromMatchup = function (matchup) {
+var _user$project$Focus$getKeyFromMatchup = function (matchup) {
 	var competitor = matchup.attacker;
 	var player = competitor.player;
 	var deck = player.deck;
@@ -8775,8 +9033,91 @@ var _user$project$Brain$getKeyFromMatchup = function (matchup) {
 		_user$project$Types$unitDataToKey,
 		A2(_elm_lang$core$List$take, num, deck));
 };
-var _user$project$Brain$depth = 2;
-var _user$project$Brain$analyze = _elm_lang$core$Native_Platform.incomingPort(
+var _user$project$Focus$depth = 4;
+var _user$project$Focus$numRuns = 4;
+var _user$project$Focus$final = function (model) {
+	var getMax = function (x) {
+		var _p4 = _elm_lang$core$List$maximum(x);
+		if (_p4.ctor === 'Nothing') {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Focus',
+				{
+					start: {line: 104, column: 16},
+					end: {line: 106, column: 18}
+				},
+				_p4)('Brain no data/no maximum? something\'s not possible');
+		} else {
+			return _p4._0;
+		}
+	};
+	var comparableDeck = A2(_elm_lang$core$List$map, _user$project$Types$unitDataToKey, model.matchup.attacker.player.deck);
+	var combos = A2(_user$project$Combination$combinations, _user$project$Focus$depth, comparableDeck);
+	var bests = A2(
+		_elm_lang$core$List$map,
+		function (combo) {
+			var get = function (x) {
+				var _p6 = A2(_user$project$Realizations$get, x, model.data);
+				if (_p6.ctor === 'Nothing') {
+					return _elm_lang$core$Native_Utils.crashCase(
+						'Focus',
+						{
+							start: {line: 111, column: 19},
+							end: {line: 114, column: 24}
+						},
+						_p6)(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Brain could not find',
+							_elm_lang$core$Basics$toString(x)));
+				} else {
+					return _p6._0;
+				}
+			};
+			var allPerms = _elm_community$list_extra$List_Extra$permutations(combo);
+			var getWins = A2(
+				_elm_lang$core$List$map,
+				function (_p8) {
+					return function (_) {
+						return _.wins;
+					}(
+						get(_p8));
+				},
+				allPerms);
+			return getMax(getWins);
+		},
+		combos);
+	var _p9 = A2(
+		_elm_lang$core$Debug$log,
+		'Brain O3 win%',
+		(_elm_lang$core$Basics$toFloat(
+			_elm_lang$core$List$sum(bests)) / _elm_lang$core$Basics$toFloat(
+			_elm_lang$core$List$length(bests))) / _user$project$Focus$numRuns);
+	var stats = A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (_p11, _p10) {
+				var _p12 = _p11;
+				var _p13 = _p10;
+				return {ctor: '_Tuple2', _0: _p13._0 + _p12.wins, _1: _p13._1 + _p12.attempts};
+			}),
+		{ctor: '_Tuple2', _0: 0, _1: 0},
+		_user$project$Realizations$values(model.data));
+	var _p14 = A2(
+		_elm_lang$core$Debug$log,
+		'Brain RNG win%',
+		_elm_lang$core$Basics$toFloat(
+			_elm_lang$core$Tuple$first(stats)) / _elm_lang$core$Basics$toFloat(
+			_elm_lang$core$Tuple$second(stats)));
+	var _p15 = A2(
+		_elm_lang$core$Debug$log,
+		'Brain done! data:',
+		_user$project$Realizations$keys(model.data));
+	return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+};
+var _user$project$Focus$maybeDeeper = function (model) {
+	return _user$project$Focus$final(model);
+};
+var _user$project$Focus$analyze = _elm_lang$core$Native_Platform.incomingPort(
 	'analyze',
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
@@ -8914,7 +9255,7 @@ var _user$project$Brain$analyze = _elm_lang$core$Native_Platform.incomingPort(
 										{health: health});
 								},
 								A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int)))))))));
-var _user$project$Brain$results = _elm_lang$core$Native_Platform.incomingPort(
+var _user$project$Focus$results = _elm_lang$core$Native_Platform.incomingPort(
 	'results',
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
@@ -9071,7 +9412,7 @@ var _user$project$Brain$results = _elm_lang$core$Native_Platform.incomingPort(
 												{health: health});
 										},
 										A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int)))))))))));
-var _user$project$Brain$resolve = _elm_lang$core$Native_Platform.outgoingPort(
+var _user$project$Focus$resolve = _elm_lang$core$Native_Platform.outgoingPort(
 	'resolve',
 	function (v) {
 		return [
@@ -9102,634 +9443,142 @@ var _user$project$Brain$resolve = _elm_lang$core$Native_Platform.outgoingPort(
 			v._1
 		];
 	});
-var _user$project$Brain$Stat = F2(
-	function (a, b) {
-		return {wins: a, attempts: b};
-	});
-var _user$project$Brain$addData = F3(
-	function (wins, attempts, entry) {
-		var _p8 = entry;
-		if (_p8.ctor === 'Nothing') {
-			return _elm_lang$core$Maybe$Just(
-				A2(_user$project$Brain$Stat, wins, attempts));
-		} else {
-			var _p9 = _p8._0;
-			return _elm_lang$core$Maybe$Just(
-				A2(_user$project$Brain$Stat, wins + _p9.wins, attempts + _p9.attempts));
-		}
-	});
-var _user$project$Brain$Model = F4(
+var _user$project$Focus$Model = F4(
 	function (a, b, c, d) {
-		return {fixed_matchup: a, total: b, data: c, currentList: d};
+		return {matchup: a, total: b, data: c, currentList: d};
 	});
-var _user$project$Brain$initAnalysis = function (matchup) {
+var _user$project$Focus$initAnalysis = function (matchup) {
 	var comparableDeck = A2(_elm_lang$core$List$map, _user$project$Types$unitDataToKey, matchup.attacker.player.deck);
-	var unitKeyLists = A2(_user$project$PartialPermute$listToDepth, _user$project$Brain$depth, comparableDeck);
-	var _p10 = A2(_elm_lang$core$Debug$log, 'what', unitKeyLists);
 	return A4(
-		_user$project$Brain$Model,
+		_user$project$Focus$Model,
 		matchup,
 		0,
-		_elm_lang$core$Dict$empty,
-		A2(
-			_elm_lang$core$List$map,
-			function (list) {
-				return A2(_elm_lang$core$List$map, _user$project$Types$unitKeyToData, list);
-			},
-			unitKeyLists));
+		_user$project$Realizations$empty,
+		{
+			ctor: '::',
+			_0: {ctor: '[]'},
+			_1: {ctor: '[]'}
+		});
 };
-var _user$project$Brain$init = {
+var _user$project$Focus$init = {
 	ctor: '_Tuple2',
-	_0: _user$project$Brain$initAnalysis(_user$project$Types$emptyMatchup),
+	_0: _user$project$Focus$initAnalysis(_user$project$Types$emptyMatchup),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _user$project$Brain$Analysis = function (a) {
+var _user$project$Focus$Analysis = function (a) {
 	return {ctor: 'Analysis', _0: a};
 };
-var _user$project$Brain$GetNext = {ctor: 'GetNext'};
-var _user$project$Brain$update = F2(
+var _user$project$Focus$GetNext = {ctor: 'GetNext'};
+var _user$project$Focus$update = F2(
 	function (msg, model) {
-		var _p11 = msg;
-		switch (_p11.ctor) {
+		var _p16 = msg;
+		switch (_p16.ctor) {
 			case 'GetNext':
-				var deck = _elm_lang$core$List$head(model.currentList);
-				var _p12 = deck;
-				if (_p12.ctor === 'Nothing') {
-					return _user$project$Brain$final(model);
+				var possibleDeck = _elm_lang$core$List$head(model.currentList);
+				var _p17 = possibleDeck;
+				if (_p17.ctor === 'Nothing') {
+					return _user$project$Focus$maybeDeeper(model);
 				} else {
-					var _p13 = A2(_elm_lang$core$Debug$log, 'doing:', deck);
-					var rest = _elm_lang$core$List$tail(model.currentList);
-					var matchup = model.fixed_matchup;
+					var _p21 = _p17._0;
+					var possibleTail = _elm_lang$core$List$tail(model.currentList);
+					var m_head = _user$project$Multiset$fromList(_p21);
+					var depth = _elm_lang$core$List$length(_p21);
+					var matchup = model.matchup;
 					var attacker = matchup.attacker;
 					var player = attacker.player;
+					var m_deck = _user$project$Multiset$fromList(
+						A2(_elm_lang$core$List$map, _user$project$Types$unitDataToKey, player.deck));
+					var m_tail = A2(_user$project$Multiset$diff, m_deck, m_head);
+					var _p18 = A2(
+						_elm_lang$core$Debug$log,
+						'what',
+						{ctor: '_Tuple5', _0: m_deck, _1: '-', _2: m_head, _3: '=', _4: m_tail});
 					var matchup_ = _elm_lang$core$Native_Utils.update(
 						matchup,
 						{
-							attacker: _elm_lang$core$Native_Utils.update(
-								attacker,
-								{
-									strategy: _user$project$Brain$depth,
-									dealer: _user$project$Brain$depth,
-									player: _elm_lang$core$Native_Utils.update(
-										player,
-										{deck: _p12._0})
-								})
+							attacker: A3(
+								_user$project$Types$Competitor,
+								_elm_lang$core$Native_Utils.update(
+									player,
+									{
+										deck: A2(
+											_elm_lang$core$List$map,
+											_user$project$Types$unitKeyToData,
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												_p21,
+												_user$project$Multiset$flatten(m_tail)))
+									}),
+								depth,
+								depth)
 						});
-					var _p14 = rest;
-					if (_p14.ctor === 'Nothing') {
+					var _p19 = possibleTail;
+					if (_p19.ctor === 'Nothing') {
 						return _elm_lang$core$Native_Utils.crashCase(
-							'Brain',
+							'Focus',
 							{
-								start: {line: 45, column: 14},
-								end: {line: 47, column: 86}
+								start: {line: 56, column: 14},
+								end: {line: 58, column: 85}
 							},
-							_p14)('Had nothing to do?');
+							_p19)('Had nothing to do?');
 					} else {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{currentList: _p14._0}),
-							_1: _user$project$Brain$resolve(
-								{ctor: '_Tuple2', _0: matchup_, _1: 1000})
+								{
+									currentList: {ctor: '[]'}
+								}),
+							_1: _user$project$Focus$resolve(
+								{ctor: '_Tuple2', _0: matchup_, _1: _user$project$Focus$numRuns})
 						};
 					}
 				}
 			case 'Result':
-				var _p19 = _p11._0.wins;
-				var _p18 = _p11._0.matchup;
-				var _p17 = _p11._0.attempts;
-				var key = _user$project$Brain$getKeyFromMatchup(_p18);
-				var _p16 = A2(
-					_elm_lang$core$Debug$log,
-					'results!',
-					{ctor: '_Tuple3', _0: _p18, _1: _p19, _2: _p17});
+				var key = _user$project$Focus$getKeyFromMatchup(_p16._0.matchup);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							data: A3(
-								_elm_lang$core$Dict$update,
+							data: A4(
+								_user$project$Realizations$addData,
+								{ctor: '_Tuple2', _0: _p16._0.wins, _1: _p16._0.attempts},
+								1,
 								key,
-								A2(_user$project$Brain$addData, _p19, _p17),
 								model.data)
 						}),
-					_1: _user$project$Types$goto(_user$project$Brain$GetNext)
+					_1: _user$project$Types$goto(_user$project$Focus$GetNext)
 				};
 			default:
 				return {
 					ctor: '_Tuple2',
-					_0: _user$project$Brain$initAnalysis(_p11._0),
-					_1: _user$project$Types$goto(_user$project$Brain$GetNext)
+					_0: _user$project$Focus$initAnalysis(_p16._0),
+					_1: _user$project$Types$goto(_user$project$Focus$GetNext)
 				};
 		}
 	});
-var _user$project$Brain$Result = function (a) {
+var _user$project$Focus$Result = function (a) {
 	return {ctor: 'Result', _0: a};
 };
-var _user$project$Brain$subs = function (model) {
+var _user$project$Focus$subs = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
-			_0: _user$project$Brain$results(_user$project$Brain$Result),
+			_0: _user$project$Focus$results(_user$project$Focus$Result),
 			_1: {
 				ctor: '::',
-				_0: _user$project$Brain$analyze(_user$project$Brain$Analysis),
+				_0: _user$project$Focus$analyze(_user$project$Focus$Analysis),
 				_1: {ctor: '[]'}
 			}
 		});
 };
-var _user$project$Brain$main = _elm_lang$core$Platform$program(
-	{init: _user$project$Brain$init, update: _user$project$Brain$update, subscriptions: _user$project$Brain$subs})();
-
-var _user$project$Player$init = {
-	ctor: '_Tuple2',
-	_0: {ctor: '_Tuple0'},
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _user$project$Player$choose = _elm_lang$core$Native_Platform.incomingPort(
-	'choose',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (matchup) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (battle) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{matchup: matchup, battle: battle});
-				},
-				A2(
-					_elm_lang$core$Json_Decode$field,
-					'battle',
-					A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (offense) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (defense) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (turn) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{offense: offense, defense: defense, turn: turn});
-										},
-										A2(_elm_lang$core$Json_Decode$field, 'turn', _elm_lang$core$Json_Decode$int));
-								},
-								A2(
-									_elm_lang$core$Json_Decode$field,
-									'defense',
-									A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (commander) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (deck) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (hand) {
-															return A2(
-																_elm_lang$core$Json_Decode$andThen,
-																function (line) {
-																	return _elm_lang$core$Json_Decode$succeed(
-																		{commander: commander, deck: deck, hand: hand, line: line});
-																},
-																A2(
-																	_elm_lang$core$Json_Decode$field,
-																	'line',
-																	_elm_lang$core$Json_Decode$array(
-																		A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (base) {
-																				return A2(
-																					_elm_lang$core$Json_Decode$andThen,
-																					function (damage_taken) {
-																						return A2(
-																							_elm_lang$core$Json_Decode$andThen,
-																							function (countdown) {
-																								return _elm_lang$core$Json_Decode$succeed(
-																									{base: base, damage_taken: damage_taken, countdown: countdown});
-																							},
-																							A2(_elm_lang$core$Json_Decode$field, 'countdown', _elm_lang$core$Json_Decode$int));
-																					},
-																					A2(_elm_lang$core$Json_Decode$field, 'damage_taken', _elm_lang$core$Json_Decode$int));
-																			},
-																			A2(
-																				_elm_lang$core$Json_Decode$field,
-																				'base',
-																				A2(
-																					_elm_lang$core$Json_Decode$andThen,
-																					function (attack) {
-																						return A2(
-																							_elm_lang$core$Json_Decode$andThen,
-																							function (health) {
-																								return A2(
-																									_elm_lang$core$Json_Decode$andThen,
-																									function (delay) {
-																										return _elm_lang$core$Json_Decode$succeed(
-																											{attack: attack, health: health, delay: delay});
-																									},
-																									A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																							},
-																							A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-																					},
-																					A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))))));
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'hand',
-															_elm_lang$core$Json_Decode$list(
-																A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (attack) {
-																		return A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (health) {
-																				return A2(
-																					_elm_lang$core$Json_Decode$andThen,
-																					function (delay) {
-																						return _elm_lang$core$Json_Decode$succeed(
-																							{attack: attack, health: health, delay: delay});
-																					},
-																					A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'deck',
-													_elm_lang$core$Json_Decode$list(
-														A2(
-															_elm_lang$core$Json_Decode$andThen,
-															function (attack) {
-																return A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (health) {
-																		return A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (delay) {
-																				return _elm_lang$core$Json_Decode$succeed(
-																					{attack: attack, health: health, delay: delay});
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-															},
-															A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'commander',
-											A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (base) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (damage_taken) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{base: base, damage_taken: damage_taken});
-														},
-														A2(_elm_lang$core$Json_Decode$field, 'damage_taken', _elm_lang$core$Json_Decode$int));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'base',
-													A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (health) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{health: health});
-														},
-														A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int))))))));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'offense',
-							A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (commander) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (deck) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (hand) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (line) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{commander: commander, deck: deck, hand: hand, line: line});
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'line',
-															_elm_lang$core$Json_Decode$array(
-																A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (base) {
-																		return A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (damage_taken) {
-																				return A2(
-																					_elm_lang$core$Json_Decode$andThen,
-																					function (countdown) {
-																						return _elm_lang$core$Json_Decode$succeed(
-																							{base: base, damage_taken: damage_taken, countdown: countdown});
-																					},
-																					A2(_elm_lang$core$Json_Decode$field, 'countdown', _elm_lang$core$Json_Decode$int));
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'damage_taken', _elm_lang$core$Json_Decode$int));
-																	},
-																	A2(
-																		_elm_lang$core$Json_Decode$field,
-																		'base',
-																		A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (attack) {
-																				return A2(
-																					_elm_lang$core$Json_Decode$andThen,
-																					function (health) {
-																						return A2(
-																							_elm_lang$core$Json_Decode$andThen,
-																							function (delay) {
-																								return _elm_lang$core$Json_Decode$succeed(
-																									{attack: attack, health: health, delay: delay});
-																							},
-																							A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																					},
-																					A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))))));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'hand',
-													_elm_lang$core$Json_Decode$list(
-														A2(
-															_elm_lang$core$Json_Decode$andThen,
-															function (attack) {
-																return A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (health) {
-																		return A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (delay) {
-																				return _elm_lang$core$Json_Decode$succeed(
-																					{attack: attack, health: health, delay: delay});
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-															},
-															A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'deck',
-											_elm_lang$core$Json_Decode$list(
-												A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (attack) {
-														return A2(
-															_elm_lang$core$Json_Decode$andThen,
-															function (health) {
-																return A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (delay) {
-																		return _elm_lang$core$Json_Decode$succeed(
-																			{attack: attack, health: health, delay: delay});
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-															},
-															A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-													},
-													A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-								},
-								A2(
-									_elm_lang$core$Json_Decode$field,
-									'commander',
-									A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (base) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (damage_taken) {
-													return _elm_lang$core$Json_Decode$succeed(
-														{base: base, damage_taken: damage_taken});
-												},
-												A2(_elm_lang$core$Json_Decode$field, 'damage_taken', _elm_lang$core$Json_Decode$int));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'base',
-											A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (health) {
-													return _elm_lang$core$Json_Decode$succeed(
-														{health: health});
-												},
-												A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int))))))))));
-		},
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'matchup',
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (attacker) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (defender) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{attacker: attacker, defender: defender});
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'defender',
-							A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (player) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (strategy) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (dealer) {
-													return _elm_lang$core$Json_Decode$succeed(
-														{player: player, strategy: strategy, dealer: dealer});
-												},
-												A2(_elm_lang$core$Json_Decode$field, 'dealer', _elm_lang$core$Json_Decode$int));
-										},
-										A2(_elm_lang$core$Json_Decode$field, 'strategy', _elm_lang$core$Json_Decode$int));
-								},
-								A2(
-									_elm_lang$core$Json_Decode$field,
-									'player',
-									A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (commander) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (deck) {
-													return _elm_lang$core$Json_Decode$succeed(
-														{commander: commander, deck: deck});
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'deck',
-													_elm_lang$core$Json_Decode$list(
-														A2(
-															_elm_lang$core$Json_Decode$andThen,
-															function (attack) {
-																return A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (health) {
-																		return A2(
-																			_elm_lang$core$Json_Decode$andThen,
-																			function (delay) {
-																				return _elm_lang$core$Json_Decode$succeed(
-																					{attack: attack, health: health, delay: delay});
-																			},
-																			A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-															},
-															A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'commander',
-											A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (health) {
-													return _elm_lang$core$Json_Decode$succeed(
-														{health: health});
-												},
-												A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int))))))));
-				},
-				A2(
-					_elm_lang$core$Json_Decode$field,
-					'attacker',
-					A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (player) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (strategy) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (dealer) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{player: player, strategy: strategy, dealer: dealer});
-										},
-										A2(_elm_lang$core$Json_Decode$field, 'dealer', _elm_lang$core$Json_Decode$int));
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'strategy', _elm_lang$core$Json_Decode$int));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'player',
-							A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (commander) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (deck) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{commander: commander, deck: deck});
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'deck',
-											_elm_lang$core$Json_Decode$list(
-												A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (attack) {
-														return A2(
-															_elm_lang$core$Json_Decode$andThen,
-															function (health) {
-																return A2(
-																	_elm_lang$core$Json_Decode$andThen,
-																	function (delay) {
-																		return _elm_lang$core$Json_Decode$succeed(
-																			{attack: attack, health: health, delay: delay});
-																	},
-																	A2(_elm_lang$core$Json_Decode$field, 'delay', _elm_lang$core$Json_Decode$int));
-															},
-															A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int));
-													},
-													A2(_elm_lang$core$Json_Decode$field, 'attack', _elm_lang$core$Json_Decode$int)))));
-								},
-								A2(
-									_elm_lang$core$Json_Decode$field,
-									'commander',
-									A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (health) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{health: health});
-										},
-										A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int)))))))))));
-var _user$project$Player$chosen = _elm_lang$core$Native_Platform.outgoingPort(
-	'chosen',
-	function (v) {
-		return v;
+var _user$project$Focus$main = _elm_lang$core$Platform$program(
+	{init: _user$project$Focus$init, update: _user$project$Focus$update, subscriptions: _user$project$Focus$subs})();
+var _user$project$Focus$Deck = F2(
+	function (a, b) {
+		return {ctor: 'Deck', _0: a, _1: b};
 	});
-var _user$project$Player$GetRandom = function (a) {
-	return {ctor: 'GetRandom', _0: a};
-};
-var _user$project$Player$gen = _mgold$elm_random_pcg$Random_Pcg$generate(_user$project$Player$GetRandom);
-var _user$project$Player$play = function (_p0) {
-	var _p1 = _p0;
-	var _p4 = _p1.matchup;
-	var _p3 = _p1.battle;
-	var hand_len = _elm_lang$core$List$length(_p3.offense.hand);
-	var remain = _elm_lang$core$List$length(_p3.offense.deck) + hand_len;
-	var offense = function () {
-		var _p2 = _user$project$Types$side(_p3);
-		if (_p2.ctor === 'Attacker') {
-			return _p4.attacker;
-		} else {
-			return _p4.defender;
-		}
-	}();
-	var origin = _elm_lang$core$List$length(offense.player.deck);
-	return A2(
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		{ctor: '_Tuple0'},
-		(_elm_lang$core$Native_Utils.cmp(offense.strategy, origin - remain) > 0) ? _user$project$Player$chosen(0) : _user$project$Player$gen(
-			A2(_mgold$elm_random_pcg$Random_Pcg$int, 0, hand_len - 1)));
-};
-var _user$project$Player$update = F2(
-	function (msg, model) {
-		var _p5 = msg;
-		if (_p5.ctor === 'Choose') {
-			return _user$project$Player$play(_p5._0);
-		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: model,
-				_1: _user$project$Player$chosen(_p5._0)
-			};
-		}
-	});
-var _user$project$Player$Choose = function (a) {
-	return {ctor: 'Choose', _0: a};
-};
-var _user$project$Player$subs = function (model) {
-	return _elm_lang$core$Platform_Sub$batch(
-		{
-			ctor: '::',
-			_0: _user$project$Player$choose(_user$project$Player$Choose),
-			_1: {ctor: '[]'}
-		});
-};
-var _user$project$Player$main = _elm_lang$core$Platform$program(
-	{init: _user$project$Player$init, update: _user$project$Player$update, subscriptions: _user$project$Player$subs})();
 
 var _user$project$Randomize$get = F2(
 	function (index, list) {
@@ -9811,14 +9660,46 @@ var _user$project$Randomize$shuffle = function (list) {
 	}
 };
 
+var _user$project$Unit$reduceHealth = F2(
+	function (amt, unit) {
+		return _elm_lang$core$Native_Utils.update(
+			unit,
+			{damage_taken: unit.damage_taken + amt});
+	});
+
+var _user$project$Simulator$alterBattle = F3(
+	function (side, fn, battle) {
+		var _p0 = side;
+		if (_p0.ctor === 'Attacker') {
+			return _elm_lang$core$Native_Utils.update(
+				battle,
+				{
+					offense: fn(battle.offense)
+				});
+		} else {
+			return _elm_lang$core$Native_Utils.update(
+				battle,
+				{
+					defense: fn(battle.defense)
+				});
+		}
+	});
+var _user$project$Simulator$alterCommander = F2(
+	function (fn, army) {
+		return _elm_lang$core$Native_Utils.update(
+			army,
+			{
+				commander: fn(army.commander)
+			});
+	});
 var _user$project$Simulator$getFixedDeck = function (competitor) {
-	var _p0 = A2(_elm_community$list_extra$List_Extra$splitAt, competitor.dealer, competitor.player.deck);
-	var head = _p0._0;
+	var _p1 = A2(_elm_community$list_extra$List_Extra$splitAt, competitor.dealer, competitor.player.deck);
+	var head = _p1._0;
 	return head;
 };
 var _user$project$Simulator$setupBattle = F2(
-	function (_p1, matchup) {
-		var _p2 = _p1;
+	function (_p2, matchup) {
+		var _p3 = _p2;
 		var defender = matchup.defender;
 		var attacker = matchup.attacker;
 		return {
@@ -9828,52 +9709,52 @@ var _user$project$Simulator$setupBattle = F2(
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					_user$project$Simulator$getFixedDeck(attacker),
-					_p2._0)),
+					_p3._0)),
 			defense: A2(
 				_user$project$Types$initArmy,
 				defender.player,
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					_user$project$Simulator$getFixedDeck(defender),
-					_p2._1)),
+					_p3._1)),
 			turn: 0
 		};
 	});
 var _user$project$Simulator$getRandomDeck = function (competitor) {
-	var _p3 = A2(_elm_community$list_extra$List_Extra$splitAt, competitor.dealer, competitor.player.deck);
-	var tail = _p3._1;
+	var _p4 = A2(_elm_community$list_extra$List_Extra$splitAt, competitor.dealer, competitor.player.deck);
+	var tail = _p4._1;
 	return tail;
 };
 var _user$project$Simulator$disconnectHead = function (list) {
-	var _p4 = list;
-	if (_p4.ctor === '[]') {
+	var _p5 = list;
+	if (_p5.ctor === '[]') {
 		return _elm_lang$core$Native_Utils.crashCase(
 			'Simulator',
 			{
-				start: {line: 100, column: 3},
-				end: {line: 103, column: 31}
+				start: {line: 123, column: 3},
+				end: {line: 126, column: 31}
 			},
-			_p4)('not allowed');
+			_p5)('not allowed');
 	} else {
-		if (_p4._1.ctor === '[]') {
+		if (_p5._1.ctor === '[]') {
 			return {
 				ctor: '_Tuple2',
-				_0: _p4._0,
+				_0: _p5._0,
 				_1: {ctor: '[]'}
 			};
 		} else {
-			return {ctor: '_Tuple2', _0: _p4._0, _1: _p4._1};
+			return {ctor: '_Tuple2', _0: _p5._0, _1: _p5._1};
 		}
 	}
 };
 var _user$project$Simulator$disconnectPos = F2(
 	function (pos, list) {
-		var _p6 = A2(_elm_community$list_extra$List_Extra$splitAt, pos, list);
-		var front = _p6._0;
-		var back = _p6._1;
-		var _p7 = _user$project$Simulator$disconnectHead(back);
-		var card = _p7._0;
-		var back_ = _p7._1;
+		var _p7 = A2(_elm_community$list_extra$List_Extra$splitAt, pos, list);
+		var front = _p7._0;
+		var back = _p7._1;
+		var _p8 = _user$project$Simulator$disconnectHead(back);
+		var card = _p8._0;
+		var back_ = _p8._1;
 		return {
 			ctor: '_Tuple2',
 			_0: card,
@@ -9883,17 +9764,17 @@ var _user$project$Simulator$disconnectPos = F2(
 var _user$project$Simulator$playCard = F2(
 	function (pos, battle) {
 		var offense = battle.offense;
-		var _p8 = A2(_user$project$Simulator$disconnectPos, pos, offense.hand);
-		var card = _p8._0;
-		var hand_ = _p8._1;
-		var line_len = _elm_lang$core$Array$length(offense.line);
+		var _p9 = A2(_user$project$Simulator$disconnectPos, pos, offense.hand);
+		var card = _p9._0;
+		var hand_ = _p9._1;
+		var line_len = _elm_lang$core$Array$length(offense.combatants);
 		var offense_ = _elm_lang$core$Native_Utils.update(
 			offense,
 			{
-				line: A2(
+				combatants: A2(
 					_elm_lang$core$Array$push,
 					_user$project$Types$initUnit(card),
-					offense.line),
+					offense.combatants),
 				hand: hand_
 			});
 		return _elm_lang$core$Native_Utils.update(
@@ -9902,9 +9783,9 @@ var _user$project$Simulator$playCard = F2(
 	});
 var _user$project$Simulator$addToHand = function (battle) {
 	var offense = battle.offense;
-	var _p9 = _user$project$Simulator$disconnectHead(offense.deck);
-	var hand = _p9._0;
-	var deck_ = _p9._1;
+	var _p10 = _user$project$Simulator$disconnectHead(offense.deck);
+	var hand = _p10._0;
+	var deck_ = _p10._1;
 	var hand_ = A2(
 		_elm_lang$core$Basics_ops['++'],
 		offense.hand,
@@ -9937,7 +9818,7 @@ var _user$project$Simulator$lineMap = F2(
 		return _elm_lang$core$Native_Utils.update(
 			side,
 			{
-				line: A2(_elm_lang$core$Array$map, map, side.line)
+				combatants: A2(_elm_lang$core$Array$map, map, side.combatants)
 			});
 	});
 var _user$project$Simulator$offensiveLine = F2(
@@ -9961,7 +9842,7 @@ var _user$project$Simulator$lineFilter = F2(
 		return _elm_lang$core$Native_Utils.update(
 			side,
 			{
-				line: A2(_elm_lang$core$Array$filter, filter, side.line)
+				combatants: A2(_elm_lang$core$Array$filter, filter, side.combatants)
 			});
 	});
 var _user$project$Simulator$removeDead = function (battle) {
@@ -9991,8 +9872,8 @@ _user$project$Simulator_ops['>>>'] = F3(
 	});
 var _user$project$Simulator$updateStats = function (model) {
 	var win = function () {
-		var _p10 = _user$project$Types$side(model.battle);
-		if (_p10.ctor === 'Attacker') {
+		var _p11 = _user$project$Types$side(model.battle);
+		if (_p11.ctor === 'Attacker') {
 			return 1;
 		} else {
 			return 0;
@@ -10007,171 +9888,15 @@ var _user$project$Simulator$updateStats = function (model) {
 				{wins: stats.wins + win, attempts: stats.attempts + 1})
 		});
 };
+var _user$project$Simulator$getFight = function (_p12) {
+	var _p13 = _p12;
+	return A2(_user$project$Types$Fight, _p13.matchup, _p13.battle);
+};
 var _user$project$Simulator$maxTurns = 100;
 var _user$project$Simulator$handSize = 3;
-var _user$project$Simulator$currentState = _elm_lang$core$Native_Platform.outgoingPort(
-	'currentState',
-	function (v) {
-		return {
-			offense: {
-				commander: {
-					base: {health: v.offense.commander.base.health},
-					damage_taken: v.offense.commander.damage_taken
-				},
-				deck: _elm_lang$core$Native_List.toArray(v.offense.deck).map(
-					function (v) {
-						return {attack: v.attack, health: v.health, delay: v.delay};
-					}),
-				hand: _elm_lang$core$Native_List.toArray(v.offense.hand).map(
-					function (v) {
-						return {attack: v.attack, health: v.health, delay: v.delay};
-					}),
-				line: _elm_lang$core$Native_Array.toJSArray(v.offense.line).map(
-					function (v) {
-						return {
-							base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
-							damage_taken: v.damage_taken,
-							countdown: v.countdown
-						};
-					})
-			},
-			defense: {
-				commander: {
-					base: {health: v.defense.commander.base.health},
-					damage_taken: v.defense.commander.damage_taken
-				},
-				deck: _elm_lang$core$Native_List.toArray(v.defense.deck).map(
-					function (v) {
-						return {attack: v.attack, health: v.health, delay: v.delay};
-					}),
-				hand: _elm_lang$core$Native_List.toArray(v.defense.hand).map(
-					function (v) {
-						return {attack: v.attack, health: v.health, delay: v.delay};
-					}),
-				line: _elm_lang$core$Native_Array.toJSArray(v.defense.line).map(
-					function (v) {
-						return {
-							base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
-							damage_taken: v.damage_taken,
-							countdown: v.countdown
-						};
-					})
-			},
-			turn: v.turn
-		};
-	});
-var _user$project$Simulator$awaitChoice = _elm_lang$core$Native_Platform.outgoingPort(
-	'awaitChoice',
-	function (v) {
-		return {
-			matchup: {
-				attacker: {
-					player: {
-						commander: {health: v.matchup.attacker.player.commander.health},
-						deck: _elm_lang$core$Native_List.toArray(v.matchup.attacker.player.deck).map(
-							function (v) {
-								return {attack: v.attack, health: v.health, delay: v.delay};
-							})
-					},
-					strategy: v.matchup.attacker.strategy,
-					dealer: v.matchup.attacker.dealer
-				},
-				defender: {
-					player: {
-						commander: {health: v.matchup.defender.player.commander.health},
-						deck: _elm_lang$core$Native_List.toArray(v.matchup.defender.player.deck).map(
-							function (v) {
-								return {attack: v.attack, health: v.health, delay: v.delay};
-							})
-					},
-					strategy: v.matchup.defender.strategy,
-					dealer: v.matchup.defender.dealer
-				}
-			},
-			battle: {
-				offense: {
-					commander: {
-						base: {health: v.battle.offense.commander.base.health},
-						damage_taken: v.battle.offense.commander.damage_taken
-					},
-					deck: _elm_lang$core$Native_List.toArray(v.battle.offense.deck).map(
-						function (v) {
-							return {attack: v.attack, health: v.health, delay: v.delay};
-						}),
-					hand: _elm_lang$core$Native_List.toArray(v.battle.offense.hand).map(
-						function (v) {
-							return {attack: v.attack, health: v.health, delay: v.delay};
-						}),
-					line: _elm_lang$core$Native_Array.toJSArray(v.battle.offense.line).map(
-						function (v) {
-							return {
-								base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
-								damage_taken: v.damage_taken,
-								countdown: v.countdown
-							};
-						})
-				},
-				defense: {
-					commander: {
-						base: {health: v.battle.defense.commander.base.health},
-						damage_taken: v.battle.defense.commander.damage_taken
-					},
-					deck: _elm_lang$core$Native_List.toArray(v.battle.defense.deck).map(
-						function (v) {
-							return {attack: v.attack, health: v.health, delay: v.delay};
-						}),
-					hand: _elm_lang$core$Native_List.toArray(v.battle.defense.hand).map(
-						function (v) {
-							return {attack: v.attack, health: v.health, delay: v.delay};
-						}),
-					line: _elm_lang$core$Native_Array.toJSArray(v.battle.defense.line).map(
-						function (v) {
-							return {
-								base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
-								damage_taken: v.damage_taken,
-								countdown: v.countdown
-							};
-						})
-				},
-				turn: v.battle.turn
-			}
-		};
-	});
-var _user$project$Simulator$report = _elm_lang$core$Native_Platform.outgoingPort(
-	'report',
-	function (v) {
-		return {
-			matchup: {
-				attacker: {
-					player: {
-						commander: {health: v.matchup.attacker.player.commander.health},
-						deck: _elm_lang$core$Native_List.toArray(v.matchup.attacker.player.deck).map(
-							function (v) {
-								return {attack: v.attack, health: v.health, delay: v.delay};
-							})
-					},
-					strategy: v.matchup.attacker.strategy,
-					dealer: v.matchup.attacker.dealer
-				},
-				defender: {
-					player: {
-						commander: {health: v.matchup.defender.player.commander.health},
-						deck: _elm_lang$core$Native_List.toArray(v.matchup.defender.player.deck).map(
-							function (v) {
-								return {attack: v.attack, health: v.health, delay: v.delay};
-							})
-					},
-					strategy: v.matchup.defender.strategy,
-					dealer: v.matchup.defender.dealer
-				}
-			},
-			wins: v.wins,
-			attempts: v.attempts
-		};
-	});
 var _user$project$Simulator$play = _elm_lang$core$Native_Platform.incomingPort('play', _elm_lang$core$Json_Decode$int);
-var _user$project$Simulator$requisition = _elm_lang$core$Native_Platform.incomingPort(
-	'requisition',
+var _user$project$Simulator$initSim = _elm_lang$core$Native_Platform.incomingPort(
+	'initSim',
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
 		function (x0) {
@@ -10323,6 +10048,166 @@ var _user$project$Simulator$requisition = _elm_lang$core$Native_Platform.incomin
 										},
 										A2(_elm_lang$core$Json_Decode$field, 'health', _elm_lang$core$Json_Decode$int)))))))))));
 var _user$project$Simulator$getState = _elm_lang$core$Native_Platform.incomingPort('getState', _elm_lang$core$Json_Decode$int);
+var _user$project$Simulator$currentState = _elm_lang$core$Native_Platform.outgoingPort(
+	'currentState',
+	function (v) {
+		return {
+			offense: {
+				commander: {
+					base: {health: v.offense.commander.base.health},
+					damage_taken: v.offense.commander.damage_taken
+				},
+				deck: _elm_lang$core$Native_List.toArray(v.offense.deck).map(
+					function (v) {
+						return {attack: v.attack, health: v.health, delay: v.delay};
+					}),
+				hand: _elm_lang$core$Native_List.toArray(v.offense.hand).map(
+					function (v) {
+						return {attack: v.attack, health: v.health, delay: v.delay};
+					}),
+				combatants: _elm_lang$core$Native_Array.toJSArray(v.offense.combatants).map(
+					function (v) {
+						return {
+							base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
+							damage_taken: v.damage_taken,
+							countdown: v.countdown
+						};
+					})
+			},
+			defense: {
+				commander: {
+					base: {health: v.defense.commander.base.health},
+					damage_taken: v.defense.commander.damage_taken
+				},
+				deck: _elm_lang$core$Native_List.toArray(v.defense.deck).map(
+					function (v) {
+						return {attack: v.attack, health: v.health, delay: v.delay};
+					}),
+				hand: _elm_lang$core$Native_List.toArray(v.defense.hand).map(
+					function (v) {
+						return {attack: v.attack, health: v.health, delay: v.delay};
+					}),
+				combatants: _elm_lang$core$Native_Array.toJSArray(v.defense.combatants).map(
+					function (v) {
+						return {
+							base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
+							damage_taken: v.damage_taken,
+							countdown: v.countdown
+						};
+					})
+			},
+			turn: v.turn
+		};
+	});
+var _user$project$Simulator$awaitChoice = _elm_lang$core$Native_Platform.outgoingPort(
+	'awaitChoice',
+	function (v) {
+		return {
+			matchup: {
+				attacker: {
+					player: {
+						commander: {health: v.matchup.attacker.player.commander.health},
+						deck: _elm_lang$core$Native_List.toArray(v.matchup.attacker.player.deck).map(
+							function (v) {
+								return {attack: v.attack, health: v.health, delay: v.delay};
+							})
+					},
+					strategy: v.matchup.attacker.strategy,
+					dealer: v.matchup.attacker.dealer
+				},
+				defender: {
+					player: {
+						commander: {health: v.matchup.defender.player.commander.health},
+						deck: _elm_lang$core$Native_List.toArray(v.matchup.defender.player.deck).map(
+							function (v) {
+								return {attack: v.attack, health: v.health, delay: v.delay};
+							})
+					},
+					strategy: v.matchup.defender.strategy,
+					dealer: v.matchup.defender.dealer
+				}
+			},
+			battle: {
+				offense: {
+					commander: {
+						base: {health: v.battle.offense.commander.base.health},
+						damage_taken: v.battle.offense.commander.damage_taken
+					},
+					deck: _elm_lang$core$Native_List.toArray(v.battle.offense.deck).map(
+						function (v) {
+							return {attack: v.attack, health: v.health, delay: v.delay};
+						}),
+					hand: _elm_lang$core$Native_List.toArray(v.battle.offense.hand).map(
+						function (v) {
+							return {attack: v.attack, health: v.health, delay: v.delay};
+						}),
+					combatants: _elm_lang$core$Native_Array.toJSArray(v.battle.offense.combatants).map(
+						function (v) {
+							return {
+								base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
+								damage_taken: v.damage_taken,
+								countdown: v.countdown
+							};
+						})
+				},
+				defense: {
+					commander: {
+						base: {health: v.battle.defense.commander.base.health},
+						damage_taken: v.battle.defense.commander.damage_taken
+					},
+					deck: _elm_lang$core$Native_List.toArray(v.battle.defense.deck).map(
+						function (v) {
+							return {attack: v.attack, health: v.health, delay: v.delay};
+						}),
+					hand: _elm_lang$core$Native_List.toArray(v.battle.defense.hand).map(
+						function (v) {
+							return {attack: v.attack, health: v.health, delay: v.delay};
+						}),
+					combatants: _elm_lang$core$Native_Array.toJSArray(v.battle.defense.combatants).map(
+						function (v) {
+							return {
+								base: {attack: v.base.attack, health: v.base.health, delay: v.base.delay},
+								damage_taken: v.damage_taken,
+								countdown: v.countdown
+							};
+						})
+				},
+				turn: v.battle.turn
+			}
+		};
+	});
+var _user$project$Simulator$report = _elm_lang$core$Native_Platform.outgoingPort(
+	'report',
+	function (v) {
+		return {
+			matchup: {
+				attacker: {
+					player: {
+						commander: {health: v.matchup.attacker.player.commander.health},
+						deck: _elm_lang$core$Native_List.toArray(v.matchup.attacker.player.deck).map(
+							function (v) {
+								return {attack: v.attack, health: v.health, delay: v.delay};
+							})
+					},
+					strategy: v.matchup.attacker.strategy,
+					dealer: v.matchup.attacker.dealer
+				},
+				defender: {
+					player: {
+						commander: {health: v.matchup.defender.player.commander.health},
+						deck: _elm_lang$core$Native_List.toArray(v.matchup.defender.player.deck).map(
+							function (v) {
+								return {attack: v.attack, health: v.health, delay: v.delay};
+							})
+					},
+					strategy: v.matchup.defender.strategy,
+					dealer: v.matchup.defender.dealer
+				}
+			},
+			wins: v.wins,
+			attempts: v.attempts
+		};
+	});
 var _user$project$Simulator$Model = F3(
 	function (a, b, c) {
 		return {battle: a, matchup: b, stats: c};
@@ -10359,7 +10244,7 @@ var _user$project$Simulator$matchRandomize = function (model) {
 		_user$project$Simulator$Setup,
 		A2(_mgold$elm_random_pcg$Random_Pcg$pair, att, def));
 };
-var _user$project$Simulator$simOrder = F2(
+var _user$project$Simulator$requisition = F2(
 	function (matchup, repeats) {
 		var model = {
 			battle: _user$project$Types$emptyBattle,
@@ -10395,54 +10280,47 @@ var _user$project$Simulator$Melee = function (a) {
 };
 var _user$project$Simulator$maybeMelee = F2(
 	function (pos, battle) {
-		var line_len = _elm_lang$core$Array$length(battle.offense.line);
-		return (_elm_lang$core$Native_Utils.cmp(line_len, pos) > 0) ? _user$project$Types$goto(
+		var line_len = _elm_lang$core$Array$length(battle.offense.combatants);
+		var isAnotherFighter = _elm_lang$core$Native_Utils.cmp(line_len, pos) > 0;
+		return isAnotherFighter ? _user$project$Types$goto(
 			_user$project$Simulator$Melee(pos)) : _user$project$Types$goto(_user$project$Simulator$RemoveDead);
 	});
 var _user$project$Simulator$melee = F2(
 	function (pos, battle) {
-		var off = A2(_elm_lang$core$Array$get, pos, battle.offense.line);
+		var off_line = A2(_elm_lang$core$Array$get, pos, battle.offense.combatants);
 		var maybeMeleeNext = _user$project$Simulator$maybeMelee(pos + 1);
-		var _p11 = off;
-		if (_p11.ctor === 'Nothing') {
+		var _p14 = off_line;
+		if (_p14.ctor === 'Nothing') {
 			return {
 				ctor: '_Tuple2',
 				_0: battle,
 				_1: _user$project$Types$goto(_user$project$Simulator$RemoveDead)
 			};
 		} else {
-			var _p13 = _p11._0;
-			var reduceHealth = F2(
-				function (amt, unit) {
-					return _elm_lang$core$Native_Utils.update(
-						unit,
-						{damage_taken: unit.damage_taken + amt});
-				});
+			var _p16 = _p14._0;
 			var defense = battle.defense;
-			var def = A2(_elm_lang$core$Array$get, pos, defense.line);
-			var attack = _p13.base.attack;
-			if (_user$project$Simulator$isAlive(_p13) && _user$project$Simulator$isActive(_p13)) {
-				var _p12 = def;
-				if (_p12.ctor === 'Nothing') {
-					var reducedHealthComm = A2(reduceHealth, attack, defense.commander);
-					var battle_ = _elm_lang$core$Native_Utils.update(
-						battle,
-						{
-							defense: _elm_lang$core$Native_Utils.update(
-								defense,
-								{commander: reducedHealthComm})
-						});
-					return _user$project$Simulator$isAlive(reducedHealthComm) ? A2(_user$project$Simulator_ops['=>'], battle_, maybeMeleeNext) : {
+			var def = A2(_elm_lang$core$Array$get, pos, defense.combatants);
+			var attack = _p16.base.attack;
+			if (_user$project$Simulator$isAlive(_p16) && _user$project$Simulator$isActive(_p16)) {
+				var _p15 = def;
+				if (_p15.ctor === 'Nothing') {
+					var calc_dam = _user$project$Commander$reduceHealth(attack);
+					var battle_ = A3(
+						_user$project$Simulator$alterBattle,
+						_user$project$Types$Defender,
+						_user$project$Simulator$alterCommander(calc_dam),
+						battle);
+					return _user$project$Simulator$isAlive(battle_.defense.commander) ? A2(_user$project$Simulator_ops['=>'], battle_, maybeMeleeNext) : {
 						ctor: '_Tuple2',
 						_0: battle_,
 						_1: _user$project$Types$goto(_user$project$Simulator$EndBattle)
 					};
 				} else {
-					var reducedHealthUnit = A2(reduceHealth, attack, _p12._0);
+					var reducedHealthUnit = A2(_user$project$Unit$reduceHealth, attack, _p15._0);
 					var def_ = _elm_lang$core$Native_Utils.update(
 						defense,
 						{
-							line: A3(_elm_lang$core$Array$set, pos, reducedHealthUnit, defense.line)
+							combatants: A3(_elm_lang$core$Array$set, pos, reducedHealthUnit, defense.combatants)
 						});
 					return A2(
 						_user$project$Simulator_ops['=>'],
@@ -10460,34 +10338,60 @@ var _user$project$Simulator$maybeStartMelee = _user$project$Simulator$maybeMelee
 var _user$project$Simulator$Play = function (a) {
 	return {ctor: 'Play', _0: a};
 };
+var _user$project$Simulator$pick = function (_p17) {
+	var _p18 = _p17;
+	var _p21 = _p18.matchup;
+	var _p20 = _p18.battle;
+	var hand_len = _elm_lang$core$List$length(_p20.offense.hand);
+	var remain = _elm_lang$core$List$length(_p20.offense.deck) + hand_len;
+	var offense = function () {
+		var _p19 = _user$project$Types$side(_p20);
+		if (_p19.ctor === 'Attacker') {
+			return _p21.attacker;
+		} else {
+			return _p21.defender;
+		}
+	}();
+	var origin = _elm_lang$core$List$length(offense.player.deck);
+	return (_elm_lang$core$Native_Utils.cmp(offense.strategy, origin - remain) > 0) ? _user$project$Types$goto(
+		_user$project$Simulator$Play(0)) : A2(
+		_mgold$elm_random_pcg$Random_Pcg$generate,
+		_user$project$Simulator$Play,
+		A2(_mgold$elm_random_pcg$Random_Pcg$int, 0, hand_len - 1));
+};
 var _user$project$Simulator$subs = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
 			_0: _user$project$Simulator$play(
-				function (_p14) {
+				function (_p22) {
 					return _user$project$Simulator$Battle(
-						_user$project$Simulator$Play(_p14));
+						_user$project$Simulator$Play(_p22));
 				}),
 			_1: {
 				ctor: '::',
 				_0: _user$project$Simulator$getState(_user$project$Simulator$GetState),
 				_1: {
 					ctor: '::',
-					_0: _user$project$Simulator$requisition(_user$project$Simulator$NewSim),
+					_0: _user$project$Simulator$initSim(_user$project$Simulator$NewSim),
 					_1: {ctor: '[]'}
 				}
 			}
 		});
 };
-var _user$project$Simulator$AwaitChoice = {ctor: 'AwaitChoice'};
+var _user$project$Simulator$Strategize = {ctor: 'Strategize'};
 var _user$project$Simulator$maybePlay = function (battle) {
 	var hand_len = _elm_lang$core$List$length(battle.offense.hand);
 	var cardChoice = _elm_lang$core$Native_Utils.cmp(hand_len, 1) > 0;
-	var anyCards = _elm_lang$core$Native_Utils.cmp(hand_len, 0) > 0;
-	return cardChoice ? _user$project$Types$goto(_user$project$Simulator$AwaitChoice) : (anyCards ? _user$project$Types$goto(
-		_user$project$Simulator$Play(0)) : _user$project$Simulator$maybeStartMelee(battle));
+	if (cardChoice) {
+		return _user$project$Types$goto(_user$project$Simulator$Strategize);
+	} else {
+		var anyCards = _elm_lang$core$Native_Utils.cmp(hand_len, 0) > 0;
+		return anyCards ? _user$project$Types$goto(
+			_user$project$Simulator$Play(0)) : _user$project$Simulator$maybeStartMelee(battle);
+	}
 };
+var _user$project$Simulator$AwaitChoice = {ctor: 'AwaitChoice'};
 var _user$project$Simulator$Draw = {ctor: 'Draw'};
 var _user$project$Simulator$maybeDrawCard = function (battle) {
 	var offense = battle.offense;
@@ -10529,13 +10433,14 @@ var _user$project$Simulator$setupDecks = F2(
 		};
 	});
 var _user$project$Simulator$maybeEndBattle = function (battle) {
-	return _elm_lang$core$Native_Utils.eq(battle.turn, _user$project$Simulator$maxTurns) ? _user$project$Types$goto(_user$project$Simulator$EndBattle) : _user$project$Types$goto(_user$project$Simulator$TakeSides);
+	var noMoreTurns = _elm_lang$core$Native_Utils.eq(battle.turn, _user$project$Simulator$maxTurns);
+	return noMoreTurns ? _user$project$Types$goto(_user$project$Simulator$EndBattle) : _user$project$Types$goto(_user$project$Simulator$TakeSides);
 };
 var _user$project$Simulator$updateTurn = F2(
 	function (msg, battle) {
 		return function () {
-			var _p15 = msg;
-			switch (_p15.ctor) {
+			var _p23 = msg;
+			switch (_p23.ctor) {
 				case 'TakeSides':
 					return _user$project$Simulator$takeSides;
 				case 'ReduceDelay':
@@ -10548,28 +10453,28 @@ var _user$project$Simulator$updateTurn = F2(
 				case 'Play':
 					return A2(
 						_user$project$Simulator_ops['>>>'],
-						_user$project$Simulator$playCard(_p15._0),
+						_user$project$Simulator$playCard(_p23._0),
 						_user$project$Simulator$maybeStartMelee);
 				case 'Melee':
-					return _user$project$Simulator$melee(_p15._0);
+					return _user$project$Simulator$melee(_p23._0);
 				case 'RemoveDead':
 					return A2(_user$project$Simulator_ops['>>>'], _user$project$Simulator$removeDead, _user$project$Simulator$maybeEndBattle);
 				default:
 					return _elm_lang$core$Native_Utils.crashCase(
 						'Simulator',
 						{
-							start: {line: 77, column: 35},
-							end: {line: 85, column: 59}
+							start: {line: 103, column: 35},
+							end: {line: 110, column: 60}
 						},
-						_p15)('should\'ve been taken care of upstream');
+						_p23)('should\'ve been taken care of by update');
 			}
 		}()(battle);
 	});
 var _user$project$Simulator$continueBattle = F2(
 	function (msg, model) {
-		var _p17 = A2(_user$project$Simulator$updateTurn, msg, model.battle);
-		var battle_ = _p17._0;
-		var cmd = _p17._1;
+		var _p25 = A2(_user$project$Simulator$updateTurn, msg, model.battle);
+		var battle_ = _p25._0;
+		var cmd = _p25._1;
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Native_Utils.update(
@@ -10580,16 +10485,18 @@ var _user$project$Simulator$continueBattle = F2(
 	});
 var _user$project$Simulator$update = F2(
 	function (msg, model) {
-		var _p18 = msg;
-		switch (_p18.ctor) {
+		var _p26 = msg;
+		switch (_p26.ctor) {
 			case 'NewSim':
-				return A2(_user$project$Simulator$simOrder, _p18._0._0, _p18._0._1);
+				var _p28 = _p26._0._0;
+				var _p27 = A2(_elm_lang$core$Debug$log, 'simulating', _p28);
+				return A2(_user$project$Simulator$requisition, _p28, _p26._0._1);
 			case 'Match':
 				return _user$project$Simulator$newMatchup(model);
 			case 'Setup':
 				return A2(
 					_user$project$Simulator$setupDecks,
-					{ctor: '_Tuple2', _0: _p18._0._0, _1: _p18._0._1},
+					{ctor: '_Tuple2', _0: _p26._0._0, _1: _p26._0._1},
 					model);
 			case 'GetState':
 				return {
@@ -10598,23 +10505,35 @@ var _user$project$Simulator$update = F2(
 					_1: _user$project$Simulator$currentState(model.battle)
 				};
 			default:
-				var _p20 = _p18._0;
-				var _p19 = _p20;
-				switch (_p19.ctor) {
+				var _p32 = _p26._0;
+				var _p29 = _p32;
+				switch (_p29.ctor) {
+					case 'Strategize':
+						return A2(
+							_user$project$Simulator_ops['=>'],
+							model,
+							function (_p30) {
+								return A2(
+									_elm_lang$core$Platform_Cmd$map,
+									_user$project$Simulator$Battle,
+									_user$project$Simulator$pick(
+										_user$project$Simulator$getFight(_p30)));
+							});
 					case 'AwaitChoice':
-						return {
-							ctor: '_Tuple2',
-							_0: model,
-							_1: _user$project$Simulator$awaitChoice(
-								{battle: model.battle, matchup: model.matchup})
-						};
+						return A2(
+							_user$project$Simulator_ops['=>'],
+							model,
+							function (_p31) {
+								return _user$project$Simulator$awaitChoice(
+									_user$project$Simulator$getFight(_p31));
+							});
 					case 'EndBattle':
 						return A2(
 							_user$project$Simulator_ops['=>'],
 							_user$project$Simulator$updateStats(model),
 							_user$project$Simulator$maybeReport);
 					default:
-						return A2(_user$project$Simulator$continueBattle, _p20, model);
+						return A2(_user$project$Simulator$continueBattle, _p32, model);
 				}
 		}
 	});
@@ -10622,13 +10541,9 @@ var _user$project$Simulator$main = _elm_lang$core$Platform$program(
 	{init: _user$project$Simulator$init, update: _user$project$Simulator$update, subscriptions: _user$project$Simulator$subs})();
 
 var Elm = {};
-Elm['Brain'] = Elm['Brain'] || {};
-if (typeof _user$project$Brain$main !== 'undefined') {
-    _user$project$Brain$main(Elm['Brain'], 'Brain', undefined);
-}
-Elm['Player'] = Elm['Player'] || {};
-if (typeof _user$project$Player$main !== 'undefined') {
-    _user$project$Player$main(Elm['Player'], 'Player', undefined);
+Elm['Focus'] = Elm['Focus'] || {};
+if (typeof _user$project$Focus$main !== 'undefined') {
+    _user$project$Focus$main(Elm['Focus'], 'Focus', undefined);
 }
 Elm['Simulator'] = Elm['Simulator'] || {};
 if (typeof _user$project$Simulator$main !== 'undefined') {

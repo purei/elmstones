@@ -31,7 +31,7 @@ body { font-family: calibri, helvetica, arial, sans-serif; }
 <script src="https://cdn.rawgit.com/abdmob/x2js/master/xml2json.min.js"></script>  <!--XML->JSON-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>  <!--Utility-->
 <script type="text/javascript">
-var xml_url = "http://cors.io/?u=https://spellstone.synapse-games.com/assets/cards.xml"
+var xml_url = "https://cors-anywhere.herokuapp.com/https://spellstone.synapse-games.com/assets/cards_standard.xml"
 var json = window.localStorage.getItem('cards.json')
 //-----------------------------------------------
 var z = 10000
@@ -90,6 +90,7 @@ function getXML() {
     // oReq.addEventListener("abort", transferCanceled);
 
     oReq.open("GET", xml_url)
+    oReq.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     oReq.send()
     console.log('getting xml file')
 }
@@ -177,7 +178,7 @@ function processJSON(obj) {
 
     var U_ = upgraded(R.filter(quad, units))
 
-    var g1 = 
+    var g1 =
         { "standard base" : R.filter(standard, U)
         , "premium base" : R.filter(premium, U)
         , "standard quad" : R.filter(standard, U_)
@@ -186,7 +187,7 @@ function processJSON(obj) {
     compare(g1, 'attack', 'a1', 'norm')
     compare(g1, 'health', 'b1', 'norm')
 
-    var g1 = 
+    var g1 =
         { "cost 0" : R.filter(u => +u.cost==0, U_)
         , "cost 1" : R.filter(u => +u.cost==1, U_)
         , "cost 2" : R.filter(u => +u.cost==2, U_)
@@ -198,7 +199,7 @@ function processJSON(obj) {
 
 }
 
-function compare(datas,key,div,postproc) {
+function compare(datas,key,div,postprocess) {
     var layout = {
       autosize: true,
       width: 1000,
@@ -209,7 +210,7 @@ function compare(datas,key,div,postproc) {
 
     var pairs = R.toPairs(datas)
     var namehistdatas = R.map(x => [x[0],histData(x[1],key)], pairs)
-
+    console.log(namehistdatas)
     var graphs = R.map(
         function (data) {
             var name = data[0]
@@ -217,7 +218,7 @@ function compare(datas,key,div,postproc) {
             var nys = data[1][1]
             var ys = R.map(R.length, nys)
 
-            switch (postproc) {
+            switch (postprocess) {
                 case 'norm':
                     var mx = R.reduce(R.add, 0, ys)
                     var normed_ys = R.map(y => y / mx, ys)
