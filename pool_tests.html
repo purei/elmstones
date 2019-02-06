@@ -1,0 +1,105 @@
+<html>
+<body>
+  <script>
+    var genesis = Date.now()
+  </script>
+  <script src="workerpool.js"></script>
+  <script name="sim worker"> var pool = workerpool.pool('elmWorker.js', { maxWorkers: 4 }) </script>
+
+  <script name="test types">
+  var expect = {
+    attacker_always_lose: {
+      runs: 100,
+      assertion: function (name, stats) {
+        if (stats.wins > 0) {
+          console.error(name + ": Attacker should always lose")
+        }
+      }
+    },
+    attacker_always_win: {
+      runs: 100,
+      assertion: function (name, stats) {
+        if (stats.wins < stats.attempts) {
+          console.error(name + ": Attacker should always win")
+        }
+      }
+    },
+    win_half: {
+      runs: 300,
+      assertion: function (name, stats) {
+        if (stats.wins <= 100 || stats.wins >= 200) {
+          console.error(name + ": Should not always lose or always win (50% win rate)")
+        }
+      }
+    }
+  }
+  </script>
+
+  <script name="tests">
+  var tests = [
+    {
+      name: "list of card data accepted",
+      attacker: { hero: "2", dealer: { cards: [{attack: 1, health: 1, delay: 2}] } },
+      defender: { hero: "1", dealer: { cards: [] } },
+      outcome: "attacker_always_win"
+    },
+    {
+      name: "tie results in attacker loss",
+      attacker: { hero: "2", dealer: { cards: [] } },
+      defender: { hero: "1", dealer: { cards: [] } },
+      outcome: "attacker_always_lose"
+    },
+    {
+      name: "attack damage kills unit then hero",
+      attacker: { hero: "2", dealer: { cards: "0/2/0" } },
+      defender: { hero: "1", dealer: { cards: "1/1/1" } },
+      outcome: "attacker_always_lose"
+    },
+    {
+      name: "randomized play allows flanking to kill hero",
+      attacker: { hero: "1", dealer: { cards: "1/2/1" } },
+      defender: { hero: "1", dealer: { cards: "0/2/2, 1/2/1" }, strategy: { seed: null } },
+      outcome: "win_half"
+    },
+    {
+      name: "randomized deal allows flanking to kill hero",
+      attacker: { hero: "1", dealer: { cards: "1/2/1" } },
+      defender: { hero: "1", dealer: { cards: "0/2/2, 1/2/1", seed: null }, strategy: null },
+      outcome: "win_half"
+    },
+    {
+      name: "prioritized play gets the 4th card out as second play, flanking to kill hero",
+      attacker: { hero: "1", dealer: { cards: "0/2/0,0/2/0,0/2/0,1/1/0" }, strategy: { order: [4,1,2,3] } },
+      defender: { hero: "1", dealer: { cards: "2/2/1,2/2/0" } },
+      outcome: "attacker_always_win"
+    },
+    {
+      name: "partial deck",
+      attacker: { hero: "1", dealer: { leading: "1/1/1", remaining: "1/1/1,1/2/1" } },
+      defender: { hero: "1", dealer: { cards: "1/2/1,1/1/1,1/2/1" } },
+      outcome: "win_half"
+    }
+  ]
+
+  for (var test_ of tests) {
+    (function() {
+      var test = test_ // closure
+      var test_sim = {
+        matchup: { attacker: test.attacker, defender: test.defender },
+        runs: expect[test.outcome].runs
+      }
+      pool
+        .exec('initSim', [test_sim, {}])
+        .then(function (data) {
+          elapsed = data.stamps.time_finished - data.stamps.time_begun
+          console.log(test.name + " wins: " + data.result.wins + ", total: " + data.result.attempts + "  (" + elapsed + "ms)")
+          var since_gen = Date.now() - genesis
+          console.log(since_gen + "ms since genesis")
+          // expect[test.outcome].assertion(test.name, data.result)
+        })
+    })()
+  }
+  </script>
+
+</body>
+</html>
