@@ -258,10 +258,10 @@ playCard ( new_player, play ) battle =
                     case playPlayer of
                         -- FIXME  play.external made more sense.
                         Player.External card_ ->
-                            let
-                                _ =
-                                    Debug.log "whyyy" card_
-                            in
+                            --let
+                            --    _ =
+                            --        Debug.log "whyyy" card_
+                            --in
                             ( card_, \x -> x )
 
                         Player.Internal card_ ->

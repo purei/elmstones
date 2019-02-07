@@ -105,10 +105,10 @@ play strategy hand =
     in
     case priority of
         Nothing ->
-            let
-                _ =
-                    Debug.log "Trying to play with an empty hand... or something terrible" hand
-            in
+            --let
+            --    _ =
+            --        Debug.log "Trying to play with an empty hand... or something terrible" hand
+            --in
             ( Nothing, hand, new_strategy )
 
         Just ( _, card_, _ ) ->

@@ -88,8 +88,9 @@ goto x =
     Task.perform identity (Task.succeed x)
 
 
-json_parse_error =
-    Debug.log "Count not parse JSON: "
+
+--json_parse_error =
+--    Debug.log "Count not parse JSON: "
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -105,10 +106,10 @@ update msg model =
                     initSimulation simulation
 
                 Err error_msg ->
-                    let
-                        _ =
-                            json_parse_error error_msg
-                    in
+                    --let
+                    --    _ =
+                    --        json_parse_error error_msg
+                    --in
                     doNothing
 
         ( BattleMsg battle_msg, Simulating matchup battle ) ->
