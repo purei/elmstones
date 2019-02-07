@@ -109,9 +109,11 @@
     }
   })
 
-  var test_sim = make_test_sim(curr_idx)
-  stamp = Date.now()
-  simulator.ports.initSim.send(test_sim)
+  setTimeout(function () {
+    var test_sim = make_test_sim(curr_idx)
+    stamp = Date.now()
+    simulator.ports.initSim.send(test_sim)
+  }, 0)
 
   </script>
 
