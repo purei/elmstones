@@ -11,6 +11,7 @@ port module Simulator exposing (init)
 import Battle exposing (ExternalMsg(..))
 import Json.Decode exposing (Decoder, int, maybe, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
+import Json.Encode as Encode
 import Random.Pcg.Extended as Random exposing (Generator)
 import Task
 import Time
@@ -88,9 +89,8 @@ goto x =
     Task.perform identity (Task.succeed x)
 
 
-
---json_parse_error =
---    Debug.log "Count not parse JSON: "
+json_parse_error =
+    Debug.log
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -106,11 +106,12 @@ update msg model =
                     initSimulation simulation
 
                 Err error_msg ->
-                    --let
-                    --    _ =
-                    --        json_parse_error error_msg
-                    --in
-                    doNothing
+                    let
+                        error =
+                            Encode.object
+                                [ "Could not parse JSON: ", failEncoder (Json.Decode.errorToString error_msg) ]
+                    in
+                    ( model, simulationStats error )
 
         ( BattleMsg battle_msg, Simulating matchup battle ) ->
             let
@@ -250,4 +251,19 @@ type alias Stats =
     }
 
 
-port simulationStats : Stats -> Cmd msg
+statsEncoder : Stats -> Encode.Value
+statsEncoder stats =
+    Encode.object
+        [ ( "wins", Encode.int stats.wins )
+        , ( "attempts", Encode.int stats.attempts )
+        ]
+
+
+failEncoder : String -> Encode.Value
+failEncoder error_string =
+    Encode.object
+        [ ( "error", Encode.string error_string )
+        ]
+
+
+port simulationStats : Encode.Value -> Cmd msg

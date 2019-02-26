@@ -13,7 +13,8 @@
             "elm/html": "1.0.0",
             "elm/json": "1.1.2",
             "elm/time": "1.0.0",
-            "elm-community/list-extra": "8.1.0"
+            "elm-community/list-extra": "8.1.0",
+            "turboMaCk/any-dict": "1.0.1"
         },
         "indirect": {
             "NoRedInk/elm-random-general": "1.0.0",

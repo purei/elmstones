@@ -1,0 +1,15 @@
+<html>
+<body>
+
+<script>
+w = new Worker("simWorker.js");
+
+w.addEventListener('message', function(e) {
+    console.log('Worker said: ', e.data);
+}, false);
+
+w.postMessage({})
+</script>
+
+</body>
+</html>
